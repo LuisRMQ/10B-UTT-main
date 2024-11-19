@@ -1,5 +1,4 @@
-
-const { Builder, Browser, Capabilities, By, Key, until } = require('selenium-webdriver')
+const { Builder, Browser, Capabilities, By, Key, until } = require('selenium-webdriver');
 const edge = require('selenium-webdriver/edge');
 const chrome = require('selenium-webdriver/chrome');
 const { expect, should } = require('chai');
@@ -7,12 +6,17 @@ should();
 
 async function esperarLoader(driver) {
     let loaderPresente = true;
-    while(loaderPresente) {
+    let intentos = 0;
+    while (loaderPresente && intentos < 10) {  // Limitar intentos
         try {
             await driver.findElement(By.xpath('//div[@class="loader"]'));
-        } catch(error) {
+            loaderPresente = true;
+        } catch (error) {
             loaderPresente = false;
-            break;
+        }
+        intentos++;
+        if (loaderPresente) {
+            await driver.sleep(500);  // Esperar 500ms antes de verificar de nuevo
         }
     }
 }
@@ -22,20 +26,31 @@ describe('Probar feature de escuelas', async function() {
     let driver;
 
     before(async function() {
-        driver = await new Builder().forBrowser(Browser.CHROME)
-        .setChromeOptions(new chrome.Options().addArguments('--headless=new', '--headless', '--no-sandbox', '--window-size=1920x1080'))
-        .build();
+        this.timeout(15000);  // 15 segundos para la configuración inicial
+        const chromeOptions = new chrome.Options()
+            .addArguments(
+                '--no-sandbox',  // Para evitar problemas de permisos
+                '--window-size=1920x1080'  // Establecer el tamaño de la ventana
+            )
+            .setLoggingPrefs({ 'browser': 'ALL' });  // Habilitar logs del navegador
 
+        driver = await new Builder().forBrowser(Browser.CHROME)
+            .setChromeOptions(chromeOptions)
+            .build();
+    
         await driver.manage().window().setSize({
             width: 1920,
             height: 1080
         });
-        
-        await driver.get('http://localhost:2024/escuelas');   
+
+        // Abrir la URL de pruebas
+        await driver.get('http://localhost:2024/escuelas'); 
+
+        // Esperar explícitamente hasta que el body de la página se cargue
+        await driver.wait(until.elementLocated(By.tagName('body')), 10000);
     });
 
     it('Se puede crear una escuela', async () => {
-
         await esperarLoader(driver);
     
         const escuela = {
@@ -53,7 +68,7 @@ describe('Probar feature de escuelas', async function() {
         const campoClave = await driver.findElement(By.id('clave'));
         await campoClave.sendKeys(escuela.clave);
     
-        const submit = await driver.findElement(By.xpath('//button[@type="submit"]'))
+        const submit = await driver.findElement(By.xpath('//button[@type="submit"]'));
         await submit.click();
 
         await esperarLoader(driver);
@@ -84,6 +99,10 @@ describe('Probar feature de escuelas', async function() {
     });
 
     after(async function() {
-        await driver.quit();
-    })
+        if (driver) {
+            await driver.quit();
+        } else {
+            console.log("El driver no se inicializó correctamente.");
+        }
+    });
 });

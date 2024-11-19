@@ -6,7 +6,11 @@ const Log = require('../models/Log');
 // POST: Crear nuevo colaborador
 router.post('/new', async (req, res) => {
     const body = req.body || {};
-    
+    const validate = require('../../validation/colaborador.validate');
+    const colaboradorValido = validate.nuevoColaborador(body);
+
+
+
     await new Log({
         method: 'POST',
         endpoint: '/colaborador/new',
@@ -18,6 +22,12 @@ router.post('/new', async (req, res) => {
         },
         time: new Date()
     }).save();
+
+
+     //Inversión
+     if(colaboradorValido.error) {
+        return res.status(400).send(colaboradorValido.error.details);
+    }
 
     // Verificar duplicado de correo electrónico
     const duplicado = await Colaborador.findOne({ email: body.email });

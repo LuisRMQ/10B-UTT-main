@@ -6,7 +6,9 @@ const Log = require('../models/Log');
 // POST: Crear nuevo estudiante
 router.post('/new', async (req, res) => {
     const body = req.body || {};
-    
+    const validate = require('../../validation/estudiante.validate');
+    const estudianteValido = validate.nuevoEstudiante(body);
+
     await new Log({
         method: 'POST',
         endpoint: '/estudiante/new',
@@ -18,6 +20,14 @@ router.post('/new', async (req, res) => {
         },
         time: new Date()
     }).save();
+
+
+  //Inversión
+  if(estudianteValido.error) {
+    return res.status(400).send(estudianteValido.error.details);
+}
+
+
 
     // Verificar duplicado de matrícula
     const duplicado = await Estudiante.findOne({ matricula: body.matricula });
