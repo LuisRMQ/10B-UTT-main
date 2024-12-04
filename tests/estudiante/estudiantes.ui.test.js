@@ -1,5 +1,6 @@
-const { Builder, Browser, By, until } = require('selenium-webdriver');
+const { Builder, Browser, Capabilities, By, Key, until } = require('selenium-webdriver')
 const edge = require('selenium-webdriver/edge');
+const chrome = require('selenium-webdriver/chrome');
 const { expect } = require('chai');
 
 async function esperarLoader(driver) {
@@ -24,11 +25,28 @@ describe('Administrador de Estudiantes - Pruebas de UI', function () {
 
     before(async function () {
         this.timeout(120000);
-        const edgeOptions = new edge.Options().addArguments('--window-size=1920x1080');
-        driver = await new Builder()
-            .forBrowser('MicrosoftEdge')
-            .setChromeOptions(edgeOptions)
-            .build();
+
+        const chromeOptions = new chrome.Options()
+            .addArguments('--headless') // Ejecutar en modo headless
+            .addArguments('--disable-gpu'); // Deshabilitar GPU
+
+        try {
+            console.log('Inicializando el driver...');
+            driver = await new Builder()
+                .forBrowser('chrome')
+                .setChromeOptions(chromeOptions)
+                .build();
+
+            // Ajustar tamaño de la ventana después de construir el driver
+            await driver.manage().window().setRect({
+                width: 1920,
+                height: 1080
+            });
+            console.log('Driver inicializado correctamente.');
+        } catch (error) {
+            console.error('Error al inicializar el driver:', error);
+            throw error;
+        }
     });
 
     it('Debe crear y eliminar un estudiante correctamente', async function () {
