@@ -1,8 +1,12 @@
+# Fase 1: Configurar Alpine
 FROM alpine AS primerlinux
 RUN apk update && apk add --no-cache git
 RUN git clone -b main https://github.com/LuisRMQ/10B-UTT-main.git
 
+# Fase 2: Configurar Ubuntu
 FROM ubuntu:latest AS miubuntu
+
+# Actualizar y configurar el entorno
 RUN apt-get -y update; apt-get -y install curl
 RUN curl -sL https://deb.nodesource.com/setup_20.x | bash && apt-get -qqy install nodejs
 RUN mkdir proyecto_node
@@ -10,9 +14,19 @@ RUN apt-get update && apt-get install -y gnupg2 wget
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
 RUN apt-get update && apt-get -y install google-chrome-stable
+
+# Copiar los archivos del repositorio
 COPY --from=primerlinux 10B-UTT-main/ /repo
+
+# Instalar dependencias necesarias
 RUN cd /repo && npm install
 RUN cd /repo && npm install chromedriver@latest
 RUN npm install -g mocha@latest mochawesome@latest
 
-CMD ["bash", "-c", "node /repo/server & mocha --timeout 30000 --reporter mochawesome /repo/tests/escuela/escuelas.ui.test.js"]
+# Crear el directorio de salida para los reportes
+RUN mkdir /repo/mochawesome-report
+
+# Establecer el comando para ejecutar Mocha y el servidor, y guardar el reporte en una carpeta específica
+# Modifica el CMD
+CMD node /repo/server & mocha --timeout 30000 --reporter mochawesome --reporter-options reportDir=/repo/mochawesome-report /repo/tests/escuela/escuelas.ui.test.js && /bin/bash
+
