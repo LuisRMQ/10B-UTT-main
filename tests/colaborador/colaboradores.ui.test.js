@@ -27,9 +27,10 @@ describe('Administrador de Colaboradores - Pruebas de UI', function () {
         this.timeout(120000);
 
         const chromeOptions = new chrome.Options()
+            .addArguments('--headless=new')
             .addArguments('--headless') // Ejecutar en modo headless
-            .addArguments('--disable-gpu'); // Deshabilitar GPU
-
+            .addArguments('--window-size=1920x1080')
+            .addArguments('--no-sandbox');
         try {
             console.log('Inicializando el driver...');
             driver = await new Builder()
