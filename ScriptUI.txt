@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    environment {
+        // Aquí defines la variable IMAGE_NAME si es necesario
+        IMAGE_NAME = 'mi_proyecto'  // Nombre de la imagen Docker
+    }
+    stages {
+        stage('Verificar contenido de la carpeta Docker') {
+            steps {
+                script {
+                    // Verifica el contenido de la carpeta Docker
+                    echo 'Verificando contenido de la carpeta Docker'
+                    bat 'cd C:\\Users\\JUANNISIO\\Desktop\\10B-UTT-main\\docker && dir'
+                }
+            }
+        }
+        stage('Construir imagen Docker') {
+            steps {
+                script {
+                    // Cambia a la carpeta Docker y ejecuta docker build sin cache
+                    echo 'Construyendo imagen Docker'
+                    bat '''
+                        cd C:\\Users\\JUANNISIO\\Desktop\\10B-UTT-main\\docker
+                        docker build --no-cache -t mi_proyecto:latest .
+                    '''
+                }
+            }
+        }
+        stage('Ejecutar contenedor Docker') {
+            steps {
+                script {
+                    // Ejecuta el contenedor Docker sin TTY
+                    echo 'Ejecutando contenedor Docker'
+                    bat 'docker run mi_proyecto'
+                }
+            }
+        }
+    }
+}
