@@ -28,5 +28,6 @@ RUN mkdir /repo/mochawesome-report
 
 # Establecer el comando para ejecutar Mocha y el servidor, y guardar el reporte en una carpeta específica
 # Modifica el CMD
-CMD node /repo/server & mocha --timeout 30000 --reporter mochawesome --reporter-options reportDir=/repo/mochawesome-report /repo/tests/escuela/escuelas.ui.test.js && /bin/bash
+# CMD node /repo/server & mocha --timeout 30000 --reporter mochawesome --reporter-options reportDir=/repo/mochawesome-report /repo/tests/escuela/escuelas.ui.test.js && /bin/bash
 
+CMD node /repo/server & mocha --timeout 30000 --reporter mochawesome --reporter-options reportDir=/repo/mochawesome-report /repo/tests/escuela/escuelas.ui.test.js && tail -f /dev/null
